@@ -44,15 +44,6 @@ npm run build
 npm run preview
 ```
 
-## Deployment
-
-The `build/` folder contains the static files. Deploy to any static hosting:
-
-- [Cloudflare Pages](https://pages.cloudflare.com) (recommended)
-- [Netlify](https://netlify.com)
-- [Vercel](https://vercel.com)
-- [GitHub Pages](https://pages.github.com)
-
 ## Customization
 
 Edit `src/routes/+page.svelte` to change:
