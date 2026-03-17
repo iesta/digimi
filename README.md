@@ -1,42 +1,66 @@
-# sv
+# Digim.i
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+A minimal static homepage for electronic noise experimentation.
 
-## Creating a project
+![Digim.i](https://img.shields.io/badge/Digim.i-2d3d4d?style=flat&color=2d3d4d)
 
-If you're seeing this, you've probably already done this step. Congrats!
+## About
 
-```sh
-# create a new project
-npx sv create my-app
-```
+Digim.i is a simple, elegant landing page featuring:
 
-To recreate this project with the same configuration:
+- 🎵 Random rotating taglines describing electronic music experimentation
+- 📸 Social links (Instagram, YouTube, Threads)
+- 🎨 Dark grey radial gradient background
+- ✨ Smooth hover animations
 
-```sh
-# recreate this project
-npx sv@0.12.7 create --template minimal --types ts --install npm svelte-temp
-```
+## Tech Stack
 
-## Developing
+- **SvelteKit** - Static site generation
+- **Tailwind CSS** - Styling
+- **Space Grotesk** - Typography
+- **Static adapter** - Zero backend required
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## Getting Started
 
-```sh
+```bash
+# Clone the repo
+git clone https://github.com/iesta/digimi.git
+cd digimi
+
+# Install dependencies
+npm install
+
+# Start development server
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
 ## Building
 
-To create a production version of your app:
-
-```sh
+```bash
+# Build static site
 npm run build
+
+# Preview production build
+npm run preview
 ```
 
-You can preview the production build with `npm run preview`.
+## Deployment
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+The `build/` folder contains the static files. Deploy to any static hosting:
+
+- [Cloudflare Pages](https://pages.cloudflare.com) (recommended)
+- [Netlify](https://netlify.com)
+- [Vercel](https://vercel.com)
+- [GitHub Pages](https://pages.github.com)
+
+## Customization
+
+Edit `src/routes/+page.svelte` to change:
+
+- Social links in the `socialLinks` array
+- Taglines in the `synonyms` array
+- Colors in the inline gradient style
+
+## License
+
+MIT
