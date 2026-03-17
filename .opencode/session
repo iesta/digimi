@@ -1,0 +1,34 @@
+# Digim.i Session Transcript
+
+## Project Overview
+- Created a static SvelteKit website for Digim.i (electronic music/experimentation)
+- Background: Dark grey radial gradient (#3d4d5d → #1d2d3d)
+- Features: Rotating tagline, social icons (Instagram, YouTube, Threads)
+
+## Steps Completed
+
+1. **Initialized SvelteKit project** with TypeScript and static adapter
+2. **Set up Tailwind CSS v4** with Space Grotesk font
+3. **Created homepage** with:
+   - Title "Digim.i" (Space Grotesk font)
+   - 9 rotating taglines (click to change)
+   - Social icons (Instagram, YouTube, Threads)
+   - Dark grey radial gradient background
+4. **Created favicon** - "D" on #2d3d4d background
+5. **Built static site** to `build/` folder
+6. **Created GitHub repo** and pushed: https://github.com/iesta/digimi
+7. **Wrote README.md**
+
+## Commands
+```bash
+npm run dev      # Start dev server
+npm run build    # Build static site
+npm run preview  # Preview production build
+```
+
+## Key Files
+- `src/routes/+page.svelte` - Main homepage
+- `src/routes/+layout.svelte` - Layout with favicon
+- `src/app.css` - Global styles + Tailwind
+- `static/favicon.svg` - Favicon
+- `build/` - Static output folder
