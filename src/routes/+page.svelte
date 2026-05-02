@@ -30,6 +30,13 @@
 	];
 
 	let currentIndex = $state(Math.floor(Math.random() * synonyms.length));
+	let mouseX = $state(50);
+	let mouseY = $state(50);
+
+	function handleMouseMove(event: MouseEvent) {
+		mouseX = (event.clientX / window.innerWidth) * 100;
+		mouseY = (event.clientY / window.innerHeight) * 100;
+	}
 
 	function rotateText() {
 		let newIndex;
@@ -44,7 +51,11 @@
 	<title>Digim.i</title>
 </svelte:head>
 
-<div class="min-h-screen flex flex-col items-center justify-center p-8" style="background: radial-gradient(circle at center, #3d4d5d 0%, #2d3d4d 40%, #1d2d3d 100%);">
+<div 
+	class="min-h-screen flex flex-col items-center justify-center p-8"
+	onmousemove={handleMouseMove}
+	style="background: radial-gradient(circle at {mouseX}% {mouseY}%, #3d4d5d 0%, #2d3d4d 40%, #1d2d3d 100%);"
+>
 	<h1 class="text-6xl md:text-8xl font-bold text-white mb-8 tracking-tight">
 		Digim.i
 	</h1>
