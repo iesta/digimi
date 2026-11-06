@@ -8,7 +8,20 @@
 		'Circuit-bent soundscapes',
 		'Lo-fi signal processing',
 		'Voltage-controlled madness',
-		'Experimental audio synthesis'
+		'Experimental audio synthesis',
+		'Oscillator worship rituals',
+		'Tape hiss and feedback loops',
+		'Modular drone transmissions',
+		'Cathode ray hypnosis session',
+		'Broken sequencer poetry',
+		'Sine wave exorcism',
+		'Grain, dust and overload',
+		'Square wave tantrums at 3am',
+		'Reverb-soaked breakdown',
+		'Filter sweep to nowhere',
+		'Noise floor archaeology',
+		'Patch cables in a blender',
+		'Self-oscillating lullaby'
 	];
 
 	const socialLinks = [
@@ -52,34 +65,51 @@
 </svelte:head>
 
 <div 
-	class="min-h-screen flex flex-col items-center justify-center p-8"
+	class="relative min-h-screen overflow-hidden bg-[#1d2d3d] flex flex-col items-center justify-center p-8"
 	onmousemove={handleMouseMove}
-	style="background: radial-gradient(circle at {mouseX}% {mouseY}%, #3d4d5d 0%, #2d3d4d 40%, #1d2d3d 100%);"
 >
-	<h1 class="text-6xl md:text-8xl font-bold text-white mb-8 tracking-tight">
-		Digim.i
-	</h1>
-
-	<button
-		onclick={rotateText}
-		class="text-2xl md:text-3xl text-white/90 hover:text-white transition-all duration-300 cursor-pointer mb-16 font-light"
+	<video
+		class="absolute inset-0 h-full w-full object-cover blur-sm scale-105 motion-reduce:hidden contrast-125 brightness-75 saturate-50"
+		autoplay
+		muted
+		loop
+		playsinline
+		aria-hidden="true"
 	>
-		{synonyms[currentIndex]}
-	</button>
+		<source src="/bg.mp4" type="video/mp4" />
+	</video>
 
-	<div class="flex gap-8">
-		{#each socialLinks as link}
-			<a
-				href={link.href}
-				target="_blank"
-				rel="noopener noreferrer"
-				class="text-white/70 hover:text-white transition-all duration-300 hover:scale-110"
-				aria-label={link.name}
-			>
-				<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-					{@html link.icon}
-				</svg>
-			</a>
-		{/each}
+	<div
+		class="absolute inset-0 pointer-events-none opacity-70"
+		style="background: radial-gradient(circle at {mouseX}% {mouseY}%, #3d4d5d 0%, #2d3d4d 40%, #1d2d3d 100%);"
+	></div>
+
+	<div class="relative flex flex-col items-center">
+		<h1 class="text-6xl md:text-8xl font-bold text-white mb-8 tracking-tight">
+			Digim.i
+		</h1>
+
+		<button
+			onclick={rotateText}
+			class="text-2xl md:text-3xl text-white/90 hover:text-white transition-all duration-300 cursor-pointer mb-16 font-light"
+		>
+			{synonyms[currentIndex]}
+		</button>
+
+		<div class="flex gap-8">
+			{#each socialLinks as link}
+				<a
+					href={link.href}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="text-white/70 hover:text-white transition-all duration-300 hover:scale-110"
+					aria-label={link.name}
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+						{@html link.icon}
+					</svg>
+				</a>
+			{/each}
+		</div>
 	</div>
 </div>

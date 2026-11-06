@@ -8,9 +8,10 @@ A minimal static homepage for electronic noise experimentation.
 
 Digim.i is a simple, elegant landing page featuring:
 
-- 🎵 Random rotating taglines describing electronic music experimentation
+- 🎬 Looping muted video background (`static/bg.mp4`), slowed 2×, under a 70% gradient scrim
+- 🎵 Random rotating taglines (22) describing electronic music experimentation
 - 📸 Social links (Instagram, YouTube, Threads)
-- 🎨 Dark grey radial gradient background
+- 🎨 Dark grey radial gradient background that follows the cursor
 - ✨ Smooth hover animations
 
 ## Tech Stack
@@ -48,9 +49,9 @@ npm run preview
 
 Edit `src/routes/+page.svelte` to change:
 
-- Social links in the `socialLinks` array
-- Taglines in the `synonyms` array
-- Colors in the inline gradient style
+- Social links, names, and inline SVG icons in the `socialLinks` array
+- Taglines in the `synonyms` array (22 today; click rotates, never repeating the current one)
+- Gradient colours in the inline `radial-gradient` style (centre tracks the cursor via `mousemove`)
 
 ## License
 
