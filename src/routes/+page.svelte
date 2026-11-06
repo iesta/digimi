@@ -46,6 +46,10 @@
 	let mouseX = $state(50);
 	let mouseY = $state(50);
 
+	let scan = $state(25);
+	let sat = $state(150);
+	let dim = $state(65);
+
 	function handleMouseMove(event: MouseEvent) {
 		mouseX = (event.clientX / window.innerWidth) * 100;
 		mouseY = (event.clientY / window.innerHeight) * 100;
@@ -69,7 +73,8 @@
 	onmousemove={handleMouseMove}
 >
 	<video
-		class="absolute inset-0 h-full w-full object-cover blur-sm scale-105 motion-reduce:hidden contrast-125 brightness-75 saturate-50"
+		class="absolute inset-0 h-full w-full object-cover scale-105 motion-reduce:hidden"
+		style="filter: contrast(1.1) brightness(0.9) saturate({sat}%) sepia(0.12)"
 		autoplay
 		muted
 		loop
@@ -80,11 +85,20 @@
 	</video>
 
 	<div
-		class="absolute inset-0 pointer-events-none opacity-70"
-		style="background: radial-gradient(circle at {mouseX}% {mouseY}%, #3d4d5d 0%, #2d3d4d 40%, #1d2d3d 100%);"
+		class="absolute inset-0 pointer-events-none bg-[repeating-linear-gradient(to_bottom,rgba(0,0,0,0.6)_0px,rgba(0,0,0,0.6)_1px,transparent_1px,transparent_3px)]"
+		style="opacity: {scan / 100}"
 	></div>
 
-	<div class="relative flex flex-col items-center">
+	<div class="absolute inset-x-0 top-0 h-24 pointer-events-none bg-gradient-to-b from-transparent via-white/10 to-transparent motion-reduce:animate-none [animation:vhs-band_7s_linear_infinite]"></div>
+
+	<div class="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(0,0,0,0.8)_100%)]"></div>
+
+	<div
+		class="absolute inset-0 pointer-events-none"
+		style="opacity: {dim / 100}; background: radial-gradient(circle at {mouseX}% {mouseY}%, #3d4d5d 0%, #2d3d4d 40%, #1d2d3d 100%);"
+	></div>
+
+	<div class="relative flex flex-col items-center [text-shadow:0_2px_24px_rgba(0,0,0,0.85)]">
 		<h1 class="text-6xl md:text-8xl font-bold text-white mb-8 tracking-tight">
 			Digim.i
 		</h1>
@@ -111,5 +125,22 @@
 				</a>
 			{/each}
 		</div>
+	</div>
+
+	<div
+		class="absolute bottom-6 right-6 z-10 flex flex-col gap-2 rounded-xl border border-white/10 bg-black/25 px-4 py-3 font-mono text-[10px] tracking-[0.2em] text-white/50 backdrop-blur-md select-none"
+	>
+		<label class="flex items-center justify-between gap-3">
+			SCAN
+			<input type="range" min="0" max="60" bind:value={scan} class="h-1 w-20 accent-white/70" />
+		</label>
+		<label class="flex items-center justify-between gap-3">
+			SAT
+			<input type="range" min="50" max="300" bind:value={sat} class="h-1 w-20 accent-white/70" />
+		</label>
+		<label class="flex items-center justify-between gap-3">
+			DIM
+			<input type="range" min="0" max="90" bind:value={dim} class="h-1 w-20 accent-white/70" />
+		</label>
 	</div>
 </div>

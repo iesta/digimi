@@ -10,3 +10,8 @@ html, body {
   min-height: 100vh;
   font-family: var(--font-display);
 }
+
+@keyframes vhs-band {
+  from { transform: translateY(-25%); }
+  to   { transform: translateY(125%); }
+}

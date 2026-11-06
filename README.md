@@ -8,7 +8,7 @@ A minimal static homepage for electronic noise experimentation.
 
 Digim.i is a simple, elegant landing page featuring:
 
-- 🎬 Looping muted video background (`static/bg.mp4`), slowed 2×, under a 70% gradient scrim
+- 🎬 Looping muted video background (`static/bg.mp4`), slowed 2×, under a VHS treatment: scanlines, tracking band, vignette, and a cursor-following gradient scrim
 - 🎵 Random rotating taglines (22) describing electronic music experimentation
 - 📸 Social links (Instagram, YouTube, Threads)
 - 🎨 Dark grey radial gradient background that follows the cursor

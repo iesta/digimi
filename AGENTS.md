@@ -23,4 +23,4 @@ No lint or format commands exist. No test suite.
 - **Font** — Space Grotesk loaded via CSS custom property `--font-display`.
 - **Icons** — SVG paths are inlined as strings in the `socialLinks` array. Both `lucide-svelte` and `svelte-feather-icons` are installed but icons are hand-rolled inline in `+page.svelte`.
 - **`.npmrc`** — `engine-strict=true` is set, but `package.json` has no `engines` field. This is harmless but unusual.
-- **Video background** — `static/bg.mp4` (360×640, muted, loop, autoplay) sits behind a 70% opacity radial gradient scrim that follows the cursor. Video is blurred (`blur-sm`) and hidden under `prefers-reduced-motion`.
+- **Video background** — `static/bg.mp4` (360×640, muted, loop, autoplay) under a VHS-style CSS stack: scanlines, moving tracking band (`@keyframes vhs-band` in `app.css`), vignette, then a radial gradient scrim that follows the cursor. Three sliders bottom-right (`SCAN`, `SAT`, `DIM` state vars) tune scanline opacity, video saturation and scrim strength live. Video is hidden under `prefers-reduced-motion`.
