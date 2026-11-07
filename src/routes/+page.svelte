@@ -46,9 +46,70 @@
 	let mouseX = $state(50);
 	let mouseY = $state(50);
 
-	let scan = $state(25);
-	let sat = $state(150);
-	let dim = $state(65);
+	const PARAMS: Record<string, { label: string; min: number; max: number }> = {
+		scan: { label: 'SCAN', min: 0, max: 60 },
+		grain: { label: 'GRAIN', min: 0, max: 80 },
+		sat: { label: 'SAT', min: 0, max: 300 },
+		dim: { label: 'DIM', min: 0, max: 90 }
+	};
+
+	const PRESETS: Record<string, Record<string, number>> = {
+		none: { dim: 65 },
+		vhs: { scan: 25, sat: 150, dim: 65 },
+		grain: { grain: 40, sat: 120, dim: 60 },
+		mono: { sat: 0, dim: 60 },
+		glitch: { scan: 15, sat: 200, dim: 60 }
+	};
+
+	let preset = $state('vhs');
+	let vals = $state<Record<string, number>>({ ...PRESETS.vhs });
+
+	const CLIPS = ['/bg-2.mp4', '/bg.mp4', '/bg-3.mp4', '/bg-4.mp4', '/bg-5.mp4', '/bg-6.mp4', '/bg-7.mp4'];
+	let clip = $state(0);
+
+	let soundOn = $state(false);
+	let volume = $state(2);
+	let videoEl = $state<HTMLVideoElement | null>(null);
+
+	$effect(() => {
+		if (videoEl) {
+			videoEl.muted = !soundOn;
+			videoEl.volume = volume / 6;
+		}
+	});
+
+	function toggleSound() {
+		soundOn = !soundOn;
+		if (videoEl) {
+			videoEl.muted = !soundOn;
+			videoEl.volume = volume / 6;
+			if (soundOn) videoEl.play().catch(() => {});
+		}
+	}
+
+	function setVolume(level: number) {
+		volume = volume === level ? 0 : level;
+		soundOn = true;
+		if (videoEl) {
+			videoEl.muted = false;
+			videoEl.volume = volume / 6;
+		}
+	}
+
+	function applyPreset() {
+		vals = { ...PRESETS[preset] };
+	}
+
+	function randomize() {
+		const keys = Object.keys(PRESETS);
+		preset = keys[Math.floor(Math.random() * keys.length)];
+		const next: Record<string, number> = {};
+		for (const id of Object.keys(PRESETS[preset])) {
+			const { min, max } = PARAMS[id];
+			next[id] = Math.round(min + Math.random() * (max - min));
+		}
+		vals = next;
+	}
 
 	function handleMouseMove(event: MouseEvent) {
 		mouseX = (event.clientX / window.innerWidth) * 100;
@@ -70,23 +131,31 @@
 
 <div 
 	class="relative min-h-screen overflow-hidden bg-[#1d2d3d] flex flex-col items-center justify-center p-8"
+	style="--scan: {vals.scan ?? 0}; --grain: {vals.grain ?? 0}; --sat: {vals.sat ?? 100}; --dim: {vals.dim ?? 65};"
 	onmousemove={handleMouseMove}
 >
-	<video
-		class="absolute inset-0 h-full w-full object-cover scale-105 motion-reduce:hidden"
-		style="filter: contrast(1.1) brightness(0.9) saturate({sat}%) sepia(0.12)"
-		autoplay
-		muted
-		loop
-		playsinline
-		aria-hidden="true"
-	>
-		<source src="/bg.mp4" type="video/mp4" />
-	</video>
+	{#key clip}
+		<video
+			src={CLIPS[clip]}
+			bind:this={videoEl}
+			muted={!soundOn}
+			class="absolute inset-0 h-full w-full object-cover scale-105 motion-reduce:hidden {preset === 'glitch' ? '[animation:glitch_6s_steps(1)_infinite]' : ''}"
+			style="filter: contrast(1.1) brightness(0.9) saturate(calc(var(--sat) * 1%)) sepia(0.12)"
+			autoplay
+			playsinline
+			aria-hidden="true"
+			onended={() => (clip = (clip + 1) % CLIPS.length)}
+		></video>
+	{/key}
 
 	<div
 		class="absolute inset-0 pointer-events-none bg-[repeating-linear-gradient(to_bottom,rgba(0,0,0,0.6)_0px,rgba(0,0,0,0.6)_1px,transparent_1px,transparent_3px)]"
-		style="opacity: {scan / 100}"
+		style="opacity: calc(var(--scan) / 100)"
+	></div>
+
+	<div
+		class="vhs-grain absolute inset-0 pointer-events-none mix-blend-overlay"
+		style="opacity: calc(var(--grain) / 100)"
 	></div>
 
 	<div class="absolute inset-x-0 top-0 h-24 pointer-events-none bg-gradient-to-b from-transparent via-white/10 to-transparent motion-reduce:animate-none [animation:vhs-band_7s_linear_infinite]"></div>
@@ -95,7 +164,7 @@
 
 	<div
 		class="absolute inset-0 pointer-events-none"
-		style="opacity: {dim / 100}; background: radial-gradient(circle at {mouseX}% {mouseY}%, #3d4d5d 0%, #2d3d4d 40%, #1d2d3d 100%);"
+		style="opacity: calc(var(--dim) / 100); background: radial-gradient(circle at {mouseX}% {mouseY}%, #3d4d5d 0%, #2d3d4d 40%, #1d2d3d 100%);"
 	></div>
 
 	<div class="relative flex flex-col items-center [text-shadow:0_2px_24px_rgba(0,0,0,0.85)]">
@@ -124,23 +193,98 @@
 					</svg>
 				</a>
 			{/each}
+
+			<button
+				type="button"
+				onclick={toggleSound}
+				class="cursor-pointer text-white/70 hover:text-white transition-all duration-300 hover:scale-110"
+				aria-label={soundOn ? 'Mute background video' : 'Unmute background video'}
+				aria-pressed={soundOn}
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M11 5 6 9H3v6h3l5 4z" />
+					{#if soundOn}
+						<path d="M15.5 8.5a5 5 0 0 1 0 7" />
+						<path d="M18.5 5.5a9 9 0 0 1 0 13" />
+					{:else}
+						<line x1="16" y1="9" x2="21" y2="15" />
+						<line x1="21" y1="9" x2="16" y2="15" />
+					{/if}
+				</svg>
+			</button>
+
+			{#if soundOn}
+				<div class="flex items-end gap-1" aria-label="Volume">
+					{#each [1, 2, 3, 4, 5, 6] as level}
+						<button
+							type="button"
+							onclick={() => setVolume(level)}
+							class="w-1.5 cursor-pointer rounded-sm transition-colors {level <= volume ? 'bg-white/80' : 'bg-white/25 hover:bg-white/50'} {level === 1 ? 'h-1.5' : level === 2 ? 'h-2' : level === 3 ? 'h-3' : level === 4 ? 'h-4' : level === 5 ? 'h-5' : 'h-6'}"
+							aria-label={`Volume ${level} of 6`}
+							aria-current={level <= volume}
+						></button>
+					{/each}
+				</div>
+			{/if}
+		</div>
+
+		<div class="mt-8 flex items-center gap-2">
+			{#each CLIPS as c, i (c)}
+				<button
+					type="button"
+					onclick={() => (clip = i)}
+					class="cursor-pointer rounded-full transition-all duration-200 {i === clip ? 'size-[18px] bg-white/80' : 'size-3 bg-white/25 hover:bg-white/50'}"
+					aria-label={`Play clip ${i + 1}`}
+					aria-current={i === clip}
+				></button>
+			{/each}
 		</div>
 	</div>
 
 	<div
-		class="absolute bottom-6 right-6 z-10 flex flex-col gap-2 rounded-xl border border-white/10 bg-black/25 px-4 py-3 font-mono text-[10px] tracking-[0.2em] text-white/50 backdrop-blur-md select-none"
+		class="absolute bottom-6 right-6 z-10 flex w-52 flex-col gap-2 rounded-xl border border-white/10 bg-black/25 px-4 py-3 font-mono text-[10px] tracking-[0.2em] text-white/50 backdrop-blur-md select-none"
 	>
-		<label class="flex items-center justify-between gap-3">
-			SCAN
-			<input type="range" min="0" max="60" bind:value={scan} class="h-1 w-20 accent-white/70" />
-		</label>
-		<label class="flex items-center justify-between gap-3">
-			SAT
-			<input type="range" min="50" max="300" bind:value={sat} class="h-1 w-20 accent-white/70" />
-		</label>
-		<label class="flex items-center justify-between gap-3">
-			DIM
-			<input type="range" min="0" max="90" bind:value={dim} class="h-1 w-20 accent-white/70" />
-		</label>
+		<div class="flex items-center gap-2">
+			<select
+				bind:value={preset}
+				onchange={applyPreset}
+				class="w-full cursor-pointer rounded border border-white/10 bg-black/30 px-2 py-1 uppercase tracking-[0.2em] text-white/70 outline-none"
+				aria-label="Effect preset"
+			>
+				{#each Object.keys(PRESETS) as p}
+					<option value={p} class="bg-neutral-900">{p}</option>
+				{/each}
+			</select>
+
+			<button
+				type="button"
+				onclick={randomize}
+				class="grid size-7 shrink-0 cursor-pointer place-items-center rounded border border-white/10 text-white/60 transition-colors hover:border-white/25 hover:text-white"
+				aria-label="Randomize effect"
+				title="Randomize"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<rect x="3" y="3" width="18" height="18" rx="3" />
+					<circle cx="8" cy="8" r="1.2" fill="currentColor" />
+					<circle cx="16" cy="8" r="1.2" fill="currentColor" />
+					<circle cx="12" cy="12" r="1.2" fill="currentColor" />
+					<circle cx="8" cy="16" r="1.2" fill="currentColor" />
+					<circle cx="16" cy="16" r="1.2" fill="currentColor" />
+				</svg>
+			</button>
+		</div>
+
+		{#each Object.keys(vals) as id}
+			<label class="flex items-center justify-between gap-3">
+				{PARAMS[id].label}
+				<input
+					type="range"
+					min={PARAMS[id].min}
+					max={PARAMS[id].max}
+					bind:value={vals[id]}
+					class="h-1 w-24 cursor-pointer accent-white/70"
+				/>
+			</label>
+		{/each}
 	</div>
 </div>
