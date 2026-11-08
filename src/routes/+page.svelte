@@ -69,30 +69,86 @@
 
 	let soundOn = $state(false);
 	let volume = $state(2);
+	let playing = $state(true);
 	let videoEl = $state<HTMLVideoElement | null>(null);
+	let fadeId = 0;
 
-	$effect(() => {
-		if (videoEl) {
-			videoEl.muted = !soundOn;
-			videoEl.volume = volume / 6;
+	function targetVolume() {
+		return soundOn ? volume / 6 : 0;
+	}
+
+	function fadeTo(target: number, ms = 220, done?: () => void) {
+		const v = videoEl;
+		if (!v) return done?.();
+		const from = v.volume;
+		if (Math.abs(from - target) < 0.01) {
+			v.volume = target;
+			return done?.();
 		}
-	});
+		const id = ++fadeId;
+		const start = performance.now();
+		const step = (now: number) => {
+			if (id !== fadeId || videoEl !== v) return;
+			const k = Math.min(1, (now - start) / ms);
+			v.volume = from + (target - from) * k;
+			if (k < 1) requestAnimationFrame(step);
+			else done?.();
+		};
+		requestAnimationFrame(step);
+	}
+
+	async function nextClip() {
+		fadeTo(0, 250);
+		await new Promise((r) => setTimeout(r, 500));
+		playing = true;
+		clip = (clip + 1) % CLIPS.length;
+	}
+
+	function syncAudio() {
+		if (!videoEl) return;
+		const v = videoEl;
+		v.playbackRate = 1.125; // 0.9× effective over 0.8× baked clips
+		v.muted = !soundOn || volume === 0;
+		v.volume = 0;
+		if (!v.muted) fadeTo(targetVolume(), 700);
+	}
 
 	function toggleSound() {
 		soundOn = !soundOn;
-		if (videoEl) {
-			videoEl.muted = !soundOn;
-			videoEl.volume = volume / 6;
-			if (soundOn) videoEl.play().catch(() => {});
+		if (!videoEl) return;
+		if (soundOn) {
+			videoEl.muted = false;
+			videoEl.volume = 0;
+			videoEl.play().catch(() => {});
+			fadeTo(targetVolume());
+		} else {
+			fadeTo(0, 220, () => {
+				if (videoEl) videoEl.muted = true;
+			});
 		}
 	}
 
 	function setVolume(level: number) {
 		volume = volume === level ? 0 : level;
 		soundOn = true;
-		if (videoEl) {
-			videoEl.muted = false;
-			videoEl.volume = volume / 6;
+		if (videoEl) videoEl.muted = volume === 0;
+		fadeTo(targetVolume());
+	}
+
+	function togglePlay() {
+		if (!videoEl) return;
+		if (videoEl.paused) {
+			playing = true;
+			videoEl.play().catch(() => {});
+			fadeTo(targetVolume());
+		} else {
+			playing = false;
+			fadeTo(0, 220, () => {
+				if (videoEl) {
+					videoEl.pause();
+					videoEl.volume = 0;
+				}
+			});
 		}
 	}
 
@@ -109,6 +165,15 @@
 			next[id] = Math.round(min + Math.random() * (max - min));
 		}
 		vals = next;
+	}
+
+	function handleKey(event: KeyboardEvent) {
+		if (event.code !== 'Space') return;
+		const el = document.activeElement as HTMLElement | null;
+		const tag = el?.tagName;
+		if (tag === 'INPUT' || tag === 'SELECT' || tag === 'BUTTON' || tag === 'TEXTAREA') return;
+		event.preventDefault();
+		togglePlay();
 	}
 
 	function handleMouseMove(event: MouseEvent) {
@@ -129,6 +194,8 @@
 	<title>Digim.i</title>
 </svelte:head>
 
+<svelte:window onkeydown={handleKey} />
+
 <div 
 	class="relative min-h-screen overflow-hidden bg-[#1d2d3d] flex flex-col items-center justify-center p-8"
 	style="--scan: {vals.scan ?? 0}; --grain: {vals.grain ?? 0}; --sat: {vals.sat ?? 100}; --dim: {vals.dim ?? 65};"
@@ -138,13 +205,14 @@
 		<video
 			src={CLIPS[clip]}
 			bind:this={videoEl}
-			muted={!soundOn}
-			class="absolute inset-0 h-full w-full object-cover scale-105 motion-reduce:hidden {preset === 'glitch' ? '[animation:glitch_6s_steps(1)_infinite]' : ''}"
+			muted
+			oncanplay={syncAudio}
+			class="absolute inset-0 h-full w-full object-cover scale-105 motion-reduce:hidden {preset === 'glitch' ? '[animation:glitch_6s_steps(1)_infinite,clip-in_600ms_ease-out]' : '[animation:clip-in_600ms_ease-out]'}"
 			style="filter: contrast(1.1) brightness(0.9) saturate(calc(var(--sat) * 1%)) sepia(0.12)"
 			autoplay
 			playsinline
 			aria-hidden="true"
-			onended={() => (clip = (clip + 1) % CLIPS.length)}
+			onended={nextClip}
 		></video>
 	{/key}
 
@@ -196,6 +264,23 @@
 
 			<button
 				type="button"
+				onclick={togglePlay}
+				class="cursor-pointer text-white/70 hover:text-white transition-all duration-300 hover:scale-110"
+				aria-label={playing ? 'Pause background video' : 'Play background video'}
+				aria-pressed={playing}
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+					{#if playing}
+						<line x1="9" y1="5" x2="9" y2="19" />
+						<line x1="15" y1="5" x2="15" y2="19" />
+					{:else}
+						<path d="M7 4.5 19 12 7 19.5z" />
+					{/if}
+				</svg>
+			</button>
+
+			<button
+				type="button"
 				onclick={toggleSound}
 				class="cursor-pointer text-white/70 hover:text-white transition-all duration-300 hover:scale-110"
 				aria-label={soundOn ? 'Mute background video' : 'Unmute background video'}
@@ -212,33 +297,39 @@
 					{/if}
 				</svg>
 			</button>
-
-			{#if soundOn}
-				<div class="flex items-end gap-1" aria-label="Volume">
-					{#each [1, 2, 3, 4, 5, 6] as level}
-						<button
-							type="button"
-							onclick={() => setVolume(level)}
-							class="w-1.5 cursor-pointer rounded-sm transition-colors {level <= volume ? 'bg-white/80' : 'bg-white/25 hover:bg-white/50'} {level === 1 ? 'h-1.5' : level === 2 ? 'h-2' : level === 3 ? 'h-3' : level === 4 ? 'h-4' : level === 5 ? 'h-5' : 'h-6'}"
-							aria-label={`Volume ${level} of 6`}
-							aria-current={level <= volume}
-						></button>
-					{/each}
-				</div>
-			{/if}
 		</div>
 
 		<div class="mt-8 flex items-center gap-2">
 			{#each CLIPS as c, i (c)}
 				<button
 					type="button"
-					onclick={() => (clip = i)}
+					onclick={() => {
+						clip = i;
+						soundOn = true;
+					}}
 					class="cursor-pointer rounded-full transition-all duration-200 {i === clip ? 'size-[18px] bg-white/80' : 'size-3 bg-white/25 hover:bg-white/50'}"
 					aria-label={`Play clip ${i + 1}`}
 					aria-current={i === clip}
 				></button>
 			{/each}
 		</div>
+
+		{#if soundOn}
+			<div class="mt-6 flex h-9 items-end gap-1 rounded-full bg-black/30 px-2 py-0.5">
+				{#each [1, 2, 3, 4, 5, 6] as level}
+					<button
+						type="button"
+						onclick={() => setVolume(level)}
+						class="w-[7.5px] cursor-pointer rounded-sm transition-colors {level <= volume ? 'bg-white/90' : 'bg-white/30 hover:bg-white/50'}"
+						style="height: {level * 5}px"
+						aria-label={`Volume ${level} of 6`}
+						aria-current={level <= volume}
+					></button>
+				{/each}
+			</div>
+		{:else}
+			<div class="mt-6 h-9"></div>
+		{/if}
 	</div>
 
 	<div
